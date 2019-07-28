@@ -81,7 +81,7 @@ with open(args.outfile, mode='w') as dest_csv:
                        'Primary County','Primary Country','Direct Mail Opt-In','Phone',
                        'Mobile','Phone Opt-In','Email','Current Membership Status',
                        'Current Membership Lapse Date','Ward','Membership Type', 
-                       'Membership Status','Member']
+                       'Membership Status','Member','Current Membership Since']
       writer = csv.DictWriter(dest_csv, fieldnames = output_fields) 
       writer.writeheader()
       for row in reader:
