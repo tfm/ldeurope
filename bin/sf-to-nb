@@ -73,6 +73,8 @@ parser.add_argument('outfile', help='output file')
 args = parser.parse_args()
 
 with open(args.outfile, mode='w') as dest_csv:
+  writer = csv.DictWriter(dest_csv, fieldnames = output_fields) 
+  writer.writeheader()
   for infile in args.infile:
     with open(infile) as src_csv:
       reader = csv.DictReader(src_csv, delimiter=',')
@@ -82,7 +84,5 @@ with open(args.outfile, mode='w') as dest_csv:
                        'Mobile','Phone Opt-In','Email','Current Membership Status',
                        'Current Membership Lapse Date','Ward','Membership Type', 
                        'Membership Status','Member','Current Membership Since']
-      writer = csv.DictWriter(dest_csv, fieldnames = output_fields) 
-      writer.writeheader()
       for row in reader:
         writer.writerow(nb_row_from(row, output_fields))
