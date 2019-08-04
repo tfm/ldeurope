@@ -79,7 +79,7 @@ output_fields = ['Salesforce ID','Membership Number','Deceased','Firstname',
                  'Current Membership Lapse Date','Ward','Membership Type', 
                  'Membership Status','Member','Current Membership Since']
 
-with open(args.outfile, mode='w') as dest_csv:
+with open(args.outfile, mode='wb') as dest_csv:
   writer = csv.DictWriter(dest_csv, fieldnames = output_fields) 
   writer.writeheader()
   for infile in args.infile:
