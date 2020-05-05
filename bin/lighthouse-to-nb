@@ -4,18 +4,6 @@ import argparse
 import csv
 import re
 
-"""
-Functions to map from Salesforce field to NationBuilder
-"""
-
-# from yyyy-mm-dd to the US mm-dd-yyyy
-def nb_date_from(input):
-  if input is None:
-    return ''
-  r = re.search('(\d{4})-(\d{2})-(\d{2})', input)
-  if r is None:
-    return ''
-  return '{}/{}/{}'.format(r.group(2), r.group(3), r.group(1))
 
 """
 We don't import into NationBuilders 'email_opt_in' field, as doing so would
@@ -24,18 +12,9 @@ if someone has opted out in Salesforce, we just don't set the email address
 in NationBuilder, so they can't be emailed.
 """
 def nb_email_from(input_email, input_opt_in):
-  if email_opt_in_from(row['Optin Mode']):
+  if input_opt_in == 'Yes':
     return input_email
   return ''
-
-def email_opt_in_from(input):
-  return re.search('(All|Local) - Email', input)
-
-def nb_phone_opt_in_from(input):
-  return 'True' if re.search('(All|Local) - Phone', input) else 'False'
-
-def nb_direct_mail_opt_in_from(input):
-  return 'True' if re.search('(All|Local) - Direct Mail', input) else 'False'
 
 def nb_membership_type_from(input):
   if input == 'Supporter':
@@ -43,20 +22,16 @@ def nb_membership_type_from(input):
   return input
 
 def nb_row_from(row, fieldnames):
-  row['Current Membership Lapse Date'] = nb_date_from(
-    row['Current Membership Lapse Date'])
 
   #Points of contact are assigned per Ward in NationBuilder, and since 
   #we want to assign a point of contact (National Coordinator/branch) per
   #country, we set the ward to the member's country.
-  row['Ward'] = row['Primary Country']
+  row['ward'] = row['primary_country']
 
-  row['Phone Opt-In'] = nb_phone_opt_in_from(row['Optin Mode'])
-  row['Direct Mail Opt-In'] = nb_direct_mail_opt_in_from(row['Optin Mode'])
-  row['Membership Type'] = nb_membership_type_from(row['Membership Type'])
-  row['Member'] = 'True' if row['Membership Type'] == 'Member' else 'False'
-  row['Membership Status'] = 'active'
-  row['Email'] = nb_email_from(row['Email'], email_opt_in_from(row['Optin Mode']))
+  row['membership_type'] = nb_membership_type_from(row['membership_type'])
+  row['member'] = 'True' if row['membership_type'] == 'Member' else 'False'
+  row['membership_status'] = 'active'
+  row['email'] = nb_email_from(row['email'], row['opt_in_local_email'])
 
   for key in row.copy():
     if key not in fieldnames: del row[key]
@@ -64,20 +39,20 @@ def nb_row_from(row, fieldnames):
   return row
 
 
-parser = argparse.ArgumentParser(description="Convert a Salesforce export "
+parser = argparse.ArgumentParser(description="Convert a Lighthouse export "
 "into a format suitable for importing into LibDems in Europe NatioBuilder "
 "instance")
-parser.add_argument('infile', nargs='+', help='input file(s) from SalesForce')
+parser.add_argument('infile', nargs='+', help='input file(s) from Lighthouse')
 parser.add_argument('outfile', help='output file')
 
 args = parser.parse_args()
 
-output_fields = ['Salesforce ID','Membership Number','Deceased','Firstname',
-                 'Surname','Primary Street','Primary City','Primary Postcode',
-                 'Primary County','Primary Country','Direct Mail Opt-In','Phone',
-                 'Mobile','Phone Opt-In','Email','Current Membership Status',
-                 'Current Membership Lapse Date','Ward','Membership Type', 
-                 'Membership Status','Member','Current Membership Since']
+output_fields = ['salesforce_id','membership_number','deceased','firstname',
+                 'lastname','primary_address1','primary_address2','primary_address3','primary_city','primary_postcode',
+                 'primary_country','opt_in_local_directmail','phone',
+                 'phone_mobile','opt_in_local_phone','email',
+                 'membership_lapse_date','ward','membership_type', 
+                 'membership_status','member','membership_since_date']
 
 with open(args.outfile, mode='wb') as dest_csv:
   writer = csv.DictWriter(dest_csv, fieldnames = output_fields) 
