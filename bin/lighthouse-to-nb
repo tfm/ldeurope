@@ -47,7 +47,7 @@ parser.add_argument('outfile', help='output file')
 
 args = parser.parse_args()
 
-output_fields = ['salesforce_id','membership_number','deceased','firstname',
+output_fields = ['contact_id','membership_number','deceased','firstname',
                  'lastname','primary_address1','primary_address2','primary_address3','primary_city','primary_postcode',
                  'primary_country','opt_in_local_directmail','phone',
                  'phone_mobile','opt_in_local_phone','email',
