@@ -54,7 +54,7 @@ output_fields = ['contact_id','membership_number','deceased','firstname',
                  'membership_lapse_date','ward','membership_type', 
                  'membership_status','member','membership_since_date']
 
-with open(args.outfile, mode='wb') as dest_csv:
+with open(args.outfile, mode='w') as dest_csv:
   writer = csv.DictWriter(dest_csv, fieldnames = output_fields) 
   writer.writeheader()
   for infile in args.infile:
