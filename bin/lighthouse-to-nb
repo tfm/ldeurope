@@ -3,6 +3,7 @@
 import argparse
 import csv
 import re
+import sys
 
 
 """
@@ -21,17 +22,22 @@ def nb_membership_type_from(input):
     return 'LibDem Registered Supporter'
   return input
 
+def nb_membership_lapse_date(input):
+  if input == 'Non-Member':
+    return '01/01/2099'
+  return input
 def nb_row_from(row, fieldnames):
 
-  #Points of contact are assigned per Ward in NationBuilder, and since 
+  #Points of contact are assigned per Ward in NationBuilder, and since
   #we want to assign a point of contact (National Coordinator/branch) per
   #country, we set the ward to the member's country.
   row['ward'] = row['primary_country']
 
   row['membership_type'] = nb_membership_type_from(row['membership_type'])
-  row['member'] = 'True' if row['membership_type'] == 'Member' else 'False'
-  row['membership_status'] = 'active'
+  row['member'] = u'True' if row['membership_type'] == u'Member' else u'False'
+  row['membership_status'] = u'active'
   row['email'] = nb_email_from(row['email'], row['opt_in_local_email'])
+  if row['membership_type'] == 'Non-Member': row['membership_lapse_date'] = ''
 
   for key in row.copy():
     if key not in fieldnames: del row[key]
@@ -51,14 +57,20 @@ output_fields = ['contact_id','membership_number','deceased','firstname',
                  'lastname','primary_address1','primary_address2','primary_address3','primary_city','primary_postcode',
                  'primary_country','opt_in_local_directmail','phone',
                  'phone_mobile','opt_in_local_phone','email',
-                 'membership_lapse_date','ward','membership_type', 
+                 'membership_lapse_date','ward','membership_type',
                  'membership_status','member','membership_since_date']
 
-with open(args.outfile, mode='w') as dest_csv:
-  writer = csv.DictWriter(dest_csv, fieldnames = output_fields) 
-  writer.writeheader()
-  for infile in args.infile:
-    with open(infile) as src_csv:
-      reader = csv.DictReader(src_csv, delimiter=',')
-      for row in reader:
-        writer.writerow(nb_row_from(row, output_fields))
+
+with open(args.outfile, mode='w', encoding='utf-8') as dest_csv:
+    writer = csv.DictWriter(dest_csv, fieldnames = output_fields, lineterminator = '\n')
+    writer.writeheader()
+    for infile in args.infile:
+        with open(infile , encoding='utf-8') as src_csv:
+              reader = csv.DictReader(src_csv, delimiter=',')
+              for row in reader:
+                try:
+                    writer.writerow(nb_row_from(row, output_fields))
+                    print('Line written: ', row['membership_number'], row['lastname'])
+                except:
+                      print (sys.exc_info()[0])
+                      print('Error: ', row['lastname'])
